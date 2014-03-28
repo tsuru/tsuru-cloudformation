@@ -83,6 +83,24 @@
     }
   },
   "Resources": {
+    "TsuruApiSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+            "GroupDescription" : "Tsuru API inbound rules",
+            "Tags": [ { "Key": "Name", "Value": "<%= @app %>" } ],
+            "SecurityGroupIngress" : [{
+                "IpProtocol" : "tcp",
+                "FromPort" : "22",
+                "ToPort" : "22",
+                "CidrIp" : "0.0.0.0/0"
+            },{
+                "IpProtocol" : "tcp",
+                "FromPort" : "443",
+                "ToPort" : "443",
+                "CidrIp" : "0.0.0.0/0"
+            }]
+        }
+    },
     "TsuruApiServerLaunchConfig": {
       "Type":"AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
@@ -110,7 +128,7 @@
           "Ref": "KeyName"
         },
         "SecurityGroups": [
-          "<%= @security_group %>"
+            { "Ref": "TsuruApiSecurityGroup" }
         ],
         "UserData": {
           "Fn::Base64": {
