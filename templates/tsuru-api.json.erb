@@ -139,7 +139,7 @@
     "TsuruApiELB" : { 
         "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
         "Properties" : {
-            "LoadBalancerName" : "tsuru-api",
+            "LoadBalancerName" : "<%= @app %>",
             "AvailabilityZones" : { "Fn::GetAZs" : "" },
             "Listeners" : [ {
                 "LoadBalancerPort" : "80",
@@ -147,6 +147,7 @@
                 "Protocol" : "TCP"
             } ]
         }
-    }
+    },
+    <%= partial('host_record.json.erb', :elb_name => "TsuruApiELB", :dns_record => "api", :domain => @domain_name) %>
   }
 }

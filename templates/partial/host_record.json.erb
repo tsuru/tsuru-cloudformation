@@ -1,22 +1,12 @@
     "HostRecord": {
       "Properties": {
-        "Comment": "DNS name for <%= @domain %>",
-        "HostedZoneName": ".mydomain.net.",
-        "Name": {
-          "Fn::Join": [
-            "",
-            [
-              {
-                "Ref": "AWS::StackName"
-              },
-              ".<%= @domain %>"
-            ]
-          ]
-        },
+        "Comment": "<%= @dns_record %>.<%= @domain_name %>",
+        "HostedZoneName": "<%= @domain_name %>.",
+        "Name": "<%= @dns_record %>.<%= @domain_name %>",
         "ResourceRecords": [
           {
             "Fn::GetAtt": [
-              "elb",
+                "<%= @elb_name %>",
               "DNSName"
             ]
           }
@@ -25,4 +15,4 @@
         "Type": "CNAME"
       },
       "Type": "AWS::Route53::RecordSet"
-    },
+    }
