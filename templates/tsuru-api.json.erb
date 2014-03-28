@@ -1,0 +1,152 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "<%= @app.capitalize %> Stack",
+  "Mappings": {
+    "AWSInstanceType2Arch": {
+      "c1.medium": {
+        "Arch": "64"
+      },
+      "c1.xlarge": {
+        "Arch": "64"
+      },
+      "cc1.4xlarge": {
+        "Arch": "64"
+      },
+      "cc2.8xlarge": {
+        "Arch": "64"
+      },
+      "cg1.4xlarge": {
+        "Arch": "64"
+      },
+      "m1.large": {
+        "Arch": "64"
+      },
+      "m1.small": {
+        "Arch": "64"
+      }, 
+      "m1.medium": {
+        "Arch": "64"
+      },
+      "m1.xlarge": {
+        "Arch": "64"
+      },
+      "m2.2xlarge": {
+        "Arch": "64"
+      },
+      "m2.4xlarge": {
+        "Arch": "64"
+      },
+      "m2.xlarge": {
+        "Arch": "64"
+      }
+    },
+    "AWSRegionArch2AMI": {
+      "us-east-1": {
+        "32": "",
+        "64": "<%= @ami %>"
+      },
+      "us-west-1": {
+        "32": "",
+        "64": ""
+      }
+    }
+  },
+  "Parameters": {
+    "Application": {
+      "Default": "<%= @app %>",
+      "Description": "Application name",
+      "Type": "String"
+    },
+    "InstanceType": {
+      "AllowedValues": [
+        "m1.medium",
+        "m1.large",
+        "m1.xlarge",
+        "m2.xlarge",
+        "m2.2xlarge",
+        "m2.4xlarge",
+        "c1.medium",
+        "c1.xlarge",
+        "cc1.4xlarge",
+        "cc2.8xlarge",
+        "cg1.4xlarge"
+      ],
+      "ConstraintDescription": "must be a valid EC2 instance type.",
+      "Default": "<%= @instance_type %>",
+      "Description": "WebServer EC2 instance type",
+      "Type": "String"
+    },
+    "KeyName": {
+      "Default": "tsuru_labs",
+      "Description": "The EC2 Key Pair to allow SSH access to the instances",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "TsuruApiServerLaunchConfig": {
+      "Type":"AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SecurityGroups": [
+          "<%= @security_group %>"
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                <% script = @user_data_script || 'tsuru_api.sh.erb' %>
+                <%= user_data(script) %>
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "TsuruAPIGroup" : {
+        "Type" : "AWS::AutoScaling::AutoScalingGroup",
+        "Properties" : {
+            "AvailabilityZones" : { "Fn::GetAZs" : "" },
+            "LaunchConfigurationName" : { "Ref" : "TsuruApiServerLaunchConfig" },
+            "Tags": [ { "Key": "Name", "Value": "<%= @app %>", "PropagateAtLaunch":"true" } ],
+            "MinSize" : "2",
+            "MaxSize" : "2",
+            "LoadBalancerNames" : [ { "Ref" : "TsuruApiELB" } ]
+        }
+    },
+    "TsuruApiELB" : { 
+        "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+        "Properties" : {
+            "LoadBalancerName" : "tsuru-api",
+            "AvailabilityZones" : { "Fn::GetAZs" : "" },
+            "Listeners" : [ {
+                "LoadBalancerPort" : "80",
+                "InstancePort" : "8080",
+                "Protocol" : "TCP"
+            } ]
+        }
+    }
+  }
+}

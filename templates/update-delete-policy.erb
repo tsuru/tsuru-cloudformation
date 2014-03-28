@@ -1,0 +1,32 @@
+{
+  "Statement" : [
+  {
+    "Effect" : "Deny",
+    "Principal" : "*",
+    "Action" : ["Update:Replace", "Update:Modify", "Update:Delete"],
+    "Resource" : "*",
+    "Condition" : {
+      "StringEquals" : {
+        "ResourceType" : ["AWS::EC2::Instance", "AWS::ElasticLoadBalancing::LoadBalancer"]
+      }
+    }
+  },
+  {
+    "Effect" : "Deny",
+    "Principal" : "*",
+    "Action" : ["Update:Delete"],
+    "Resource" : "*",
+    "Condition" : {
+      "StringEquals" : {
+        "ResourceType" : ["AWS::AutoScaling::AutoScalingGroup"]
+      }
+    }
+  },
+  {
+    "Effect" : "Allow",
+    "Principal" : "*",
+    "Action" : "Update:*",
+    "Resource" : "*"
+  }
+  ]
+}
