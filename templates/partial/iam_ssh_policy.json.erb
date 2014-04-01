@@ -1,0 +1,43 @@
+    "TsuruIamRole" : {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "AssumeRolePolicyDocument": {
+                "Version" : "2012-10-17",
+                "Statement": [ {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": [ "ec2.amazonaws.com" ]
+                    },
+                    "Action": [ "sts:AssumeRole" ]
+                } ]
+            },
+            "Path": "/",
+            "Policies": [ {
+                "PolicyName" : "TsuruSshBucketPolicy",
+                "PolicyDocument" :{
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "s3:GetObject",
+                                "s3:ListBucket"
+                    ],
+                    "Resource": [
+                        "arn:aws:s3:::<%= @bucket_name %>/*"
+                        ],
+                        "Effect": "Allow"
+                        }
+                        ]
+                } 
+            } ]
+        }
+    }, 
+    "TsuruIamProfile": {
+         "Type": "AWS::IAM::InstanceProfile",
+         "Properties": {
+            "Path": "/",
+            "Roles": [ {
+               "Ref": "TsuruIamRole"
+            } ]
+         }
+    },

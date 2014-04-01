@@ -7,7 +7,7 @@ gem install puppet --no-ri --no-rdoc
 pip install awscli
 
 LC_ALL=C aws s3api get-object --bucket <%= @tsuru_ssh_keys_bucket %> --key <%= @tsuru_ssh_key %> /var/lib/tsuru/<%= @tsuru_ssh_key %>
-LC_ALL=C aws s3api get-object --bucket <%= @tsuru_ssh_keys_bucket %> --key <%= @tsuru_ssh_key %>.pub /var/lib/tsuru/<%= @tsuru_ssh_key %>.pub
+LC_ALL=C aws s3api get-object --bucket <%= @tsuru_ssh_keys_bucket %> --key <%= @tsuru_ssh_key %>.pub /var/lib/tsuru/<%= @tsuru_ssh_key %>.pub 
 
 if [ ! -d /var/cache/puppet/manifests ]; then mkdir -p /var/cache/puppet/manifests; fi
 cat <<EOF >/var/cache/puppet/manifests/manifest.pp

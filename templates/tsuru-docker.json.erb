@@ -84,10 +84,10 @@
     }
   },
   "Resources": {
-    "TsuruApiSecurityGroup" : {
+    "TsuruDockerSecurityGroup" : {
         "Type" : "AWS::EC2::SecurityGroup",
         "Properties" : {
-            "GroupDescription" : "Tsuru API inbound rules",
+            "GroupDescription" : "Tsuru Docker inbound rules",
             "Tags": [ { "Key": "Name", "Value": "<%= @app %>" } ],
             "SecurityGroupIngress" : [{
                 "IpProtocol" : "tcp",
@@ -96,14 +96,20 @@
                 "CidrIp" : "0.0.0.0/0"
             },{
                 "IpProtocol" : "tcp",
-                "FromPort" : "443",
-                "ToPort" : "443",
+                "FromPort" : "4243",
+                "ToPort" : "4243",
                 "CidrIp" : "0.0.0.0/0"
-            }]
+            },{
+                "IpProtocol" : "tcp",
+                "FromPort" : "4545",
+                "ToPort" : "4545",
+                "CidrIp" : "0.0.0.0/0"
+            }
+            ]
         }
     },
     <%= partial('iam_ssh_policy.json.erb', :bucket_name => @tsuru_ssh_keys_bucket) %>
-    "TsuruApiServerLaunchConfig": {
+    "TsuruDockerServerLaunchConfig": {
       "Type":"AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
         "ImageId": {
@@ -128,19 +134,19 @@
         },
         "IamInstanceProfile": { 
           "Ref": "TsuruIamProfile"
-        },
+        }, 
         "KeyName": {
           "Ref": "KeyName"
         },
         "SecurityGroups": [
-            { "Ref": "TsuruApiSecurityGroup" }
+            { "Ref": "TsuruDockerSecurityGroup" }
         ],
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
               "",
               [
-                <% script = @user_data_script || 'tsuru_api.sh.erb' %>
+                <% script = @user_data_script || 'tsuru_docker.sh.erb' %>
                 <%= user_data(script) %>
               ]
             ]
@@ -148,31 +154,16 @@
         }
       }
     },
-    "TsuruAPIGroup" : {
+    "TsuruDockerGroup" : {
         "Type" : "AWS::AutoScaling::AutoScalingGroup",
         "DeletionPolicy" : "Retain",
         "Properties" : {
             "AvailabilityZones" : { "Fn::GetAZs" : "" },
-            "LaunchConfigurationName" : { "Ref" : "TsuruApiServerLaunchConfig" },
+            "LaunchConfigurationName" : { "Ref" : "TsuruDockerServerLaunchConfig" },
             "Tags": [ { "Key": "Name", "Value": "<%= @app %>", "PropagateAtLaunch":"true" } ],
             "MinSize" : "2",
-            "MaxSize" : "2",
-            "LoadBalancerNames" : [ { "Ref" : "TsuruApiELB" } ]
+            "MaxSize" : "2"
         }
-    },
-    "TsuruApiELB" : { 
-        "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
-        "DeletionPolicy" : "Retain",
-        "Properties" : {
-            "LoadBalancerName" : "<%= @app %>",
-            "AvailabilityZones" : { "Fn::GetAZs" : "" },
-            "Listeners" : [ {
-                "LoadBalancerPort" : "80",
-                "InstancePort" : "8080",
-                "Protocol" : "TCP"
-            } ]
-        }
-    },
-    <%= partial('host_record.json.erb', :elb_name => "TsuruApiELB", :dns_record => "api", :domain => @domain_name) %>
+    }
   }
 }
