@@ -8,6 +8,7 @@ mongo_url = mongo_hosts.empty? ? 'localhost:27017' : mongo_hosts.join(':27017') 
 redis_host = AWS.hosts_for('redis-tsuru-private')
 redis_host = redis_host.empty? ? 'localhost:6379' : redis_host + ':6379'
 tsuru_ssh_key = 'id_rsa_tsuru_labs'
+tsuru_ssh_bucket = "tsuru-labs-ssh-keys"
 
 template "tsuru-api.json" do
   source "tsuru-api.json.erb"
@@ -17,7 +18,8 @@ template "tsuru-api.json" do
     :ami => "ami-0568456c",
     :instance_type => "m1.small",
     :security_group => "tsuru-api",
-    :tsuru_ssh_keys_bucket => "tsuru-labs-ssh-keys",
+    :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
+    :tsuru_ssh_key => tsuru_ssh_key,
     :puppet_class => { :tsuru_app_domain => app_name,
                        :tsuru_api_server_url => 'api.' + domain_name,
                        :tsuru_git_url => 'http://git.' + domain_name,
@@ -40,8 +42,9 @@ template "tsuru-docker.json" do
     :ami => "ami-0568456c",
     :instance_type => "m1.small",
     :security_group => "tsuru-docker",
-    :tsuru_ssh_keys_bucket => "tsuru-labs-ssh-keys",
-    :puppet_class => { 
+    :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
+    :tsuru_ssh_key => tsuru_ssh_key,
+    :puppet_class => {
       :tsuru_ssh_agent => 'true',
       :tsuru_ssh_agent_private_key => '/var/lib/tsuru/' + tsuru_ssh_key
     }
