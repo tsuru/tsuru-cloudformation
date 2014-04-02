@@ -20,6 +20,7 @@ template "tsuru-api.json" do
     :security_group => "tsuru-api",
     :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
     :tsuru_ssh_key => tsuru_ssh_key,
+    :mongo_security_group_id => AWS.group_aws_id('mongo-tsuru-private'),
     :puppet_class => { :tsuru_app_domain => app_name,
                        :tsuru_api_server_url => 'api.' + domain_name,
                        :tsuru_git_url => 'http://git.' + domain_name,

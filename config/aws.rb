@@ -15,4 +15,8 @@ module AWS
     @hosts.uniq
   end
 
+  def self.group_aws_id(group)
+    @@conn.security_groups.get(group).group_id
+  end
+
 end

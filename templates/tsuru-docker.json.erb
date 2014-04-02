@@ -98,14 +98,21 @@
                 "IpProtocol" : "tcp",
                 "FromPort" : "4243",
                 "ToPort" : "4243",
-                "CidrIp" : "0.0.0.0/0"
+                "SourceSecurityGroupName" : { "Ref" : "TsuruDockerApiSecurityGroup" }
             },{
                 "IpProtocol" : "tcp",
                 "FromPort" : "4545",
                 "ToPort" : "4545",
-                "CidrIp" : "0.0.0.0/0"
+                "SourceSecurityGroupName" : { "Ref" : "TsuruDockerApiSecurityGroup" }
             }
             ]
+        }
+    },
+    "TsuruDockerApiSecurityGroup" : {
+        "Type" :  "AWS::EC2::SecurityGroup",
+        "Properties" : {
+            "Tags": [ { "Key": "Name", "Value": "tsuru-docker-api" } ],
+            "GroupDescription" : "Tsuru Docker -> Api permission group"
         }
     },
     <%= partial('iam_ssh_policy.json.erb', :bucket_name => @tsuru_ssh_keys_bucket) %>

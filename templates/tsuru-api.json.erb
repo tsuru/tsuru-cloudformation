@@ -81,6 +81,10 @@
       "Default": "tsuru_labs",
       "Description": "The EC2 Key Pair to allow SSH access to the instances",
       "Type": "String"
+    },
+    "DockerRefGroup": {
+      "Description": "Group used to access docker instances port and ssh-agent",
+      "Type": "String"
     }
   },
   "Resources": {
@@ -101,6 +105,16 @@
                 "CidrIp" : "0.0.0.0/0"
             }]
         }
+    },
+    "MongoGroupApiIngress": {
+        "Type": "AWS::EC2::SecurityGroupIngress",
+        "Properties" : {   
+            "GroupId": "<%= @mongo_security_group_id %>",
+            "IpProtocol": "tcp",
+            "FromPort": "27017",
+            "ToPort": "27017",
+            "SourceSecurityGroupName": { "Ref" : "TsuruApiSecurityGroup" }
+        }   
     },
     <%= partial('iam_ssh_policy.json.erb', :bucket_name => @tsuru_ssh_keys_bucket) %>
     "TsuruApiServerLaunchConfig": {
@@ -133,7 +147,7 @@
           "Ref": "KeyName"
         },
         "SecurityGroups": [
-            { "Ref": "TsuruApiSecurityGroup" }
+            { "Ref": "TsuruApiSecurityGroup" }, { "Ref": "DockerRefGroup" } 
         ],
         "UserData": {
           "Fn::Base64": {
