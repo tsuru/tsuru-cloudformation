@@ -24,11 +24,11 @@ template "tsuru-api.json" do
     :puppet_class => { :tsuru_app_domain => app_name,
                        :tsuru_api_server_url => 'api.' + domain_name,
                        :tsuru_git_url => 'http://git.' + domain_name,
-                       :tsuru_git_rw_host => 'git' + domain_name,
-                       :tsuru_git_ro_host => 'git' + domain_name,
+                       :tsuru_git_rw_host => 'git.' + domain_name,
+                       :tsuru_git_ro_host => 'git.' + domain_name,
                        :tsuru_redis_server => redis_host,
                        :tsuru_mongodb_url  => mongo_url,
-                       :tsuru_registry_server => 'registry' + domain_name,
+                       :tsuru_registry_server => 'registry.' + domain_name,
                        :tsuru_docker_servers_urls => ['docker1', 'docker2', 'docker3'],
                        :tsuru_docker_container_public_key => '/var/lib/tsuru/' + tsuru_ssh_key + '.pub'
                       }

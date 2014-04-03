@@ -15,7 +15,7 @@ cat <<EOF >/var/cache/puppet/manifests/manifest.pp
 
 class { "${tsuru_class/-/::}":
     <% @puppet_class.each do |key, value| -%>
-        <%= key %> => '<%= value %>',
+        <%= key %> => <%= value.is_a?(Array) ? value : "'#{value}'" %>,
     <% end -%>
 }
 EOF
