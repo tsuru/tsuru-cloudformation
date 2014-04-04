@@ -115,7 +115,7 @@
             "GroupDescription" : "Tsuru Docker -> Api permission group"
         }
     },
-    <%= partial('iam_ssh_policy.json.erb', :bucket_name => @tsuru_ssh_keys_bucket) %>
+    <%= partial('iam_ssh_describe_instances_policy.json.erb', :bucket_name => @tsuru_ssh_keys_bucket) %>
     "TsuruDockerServerLaunchConfig": {
       "Type":"AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
