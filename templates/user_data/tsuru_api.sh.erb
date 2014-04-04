@@ -24,7 +24,7 @@ function get_docker_ips() {
     read -d '' ruby_code_json_parse <<EOF
 require 'json'
 JSON.parse(ARGF.read)['Reservations'].each do |value|
-    puts value['Instances'][0]['PrivateIpAddress']+':4243'
+    puts "#{value['Instances'][0]['PrivateIpAddress']}:4243'"
 end
 EOF
 
@@ -32,7 +32,7 @@ EOF
 
 }
 
-while [ $private_docker_ips != "" ]
+while [ "$private_docker_ips" = "" ]
 do
     private_docker_ips=$(get_docker_ips |tr '\n' ' ')
     private_docker_ips=$(echo $private_docker_ips| sed 's/\ $//')
@@ -46,7 +46,7 @@ class { "${tsuru_class/-/::}":
     <% @puppet_class.each do |key, value| -%>
         <%= key %> => <%= value.is_a?(Array) ? value : "'#{value}'" %>,
     <% end -%>
-    tsuru_docker_servers_urls => [${private_docker_ips}]
+    tsuru_docker_servers_urls => [${private_docker_ips//\ /,}]
 }
 EOF
 
