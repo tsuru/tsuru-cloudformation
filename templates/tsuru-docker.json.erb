@@ -168,8 +168,8 @@
             "AvailabilityZones" : { "Fn::GetAZs" : "" },
             "LaunchConfigurationName" : { "Ref" : "TsuruDockerServerLaunchConfig" },
             "Tags": [ { "Key": "Name", "Value": "<%= @app %>", "PropagateAtLaunch":"true" } ],
-            "MinSize" : "2",
-            "MaxSize" : "2"
+            "MinSize" : "<%= @min_instances %>",
+            "MaxSize" : "<%= @max_instances %>" 
         }
     }
   }

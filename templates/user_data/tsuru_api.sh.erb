@@ -1,14 +1,43 @@
-#!/bin/bash -lexv
+#!/bin/bash
 
+export AWS_DEFAULT_REGION=us-east-1
+export LC_ALL=C 
 tsuru_class="<%= @app %>"
+
 apt-get update
 apt-get install ruby1.9.3 python-pip -y
 gem install puppet --no-ri --no-rdoc
 pip install awscli
 
 mkdir -p /var/lib/tsuru
-LC_ALL=C aws s3api get-object --bucket <%= @tsuru_ssh_keys_bucket %> --key <%= @tsuru_ssh_key %> /var/lib/tsuru/<%= @tsuru_ssh_key %>
-LC_ALL=C aws s3api get-object --bucket <%= @tsuru_ssh_keys_bucket %> --key <%= @tsuru_ssh_key %>.pub /var/lib/tsuru/<%= @tsuru_ssh_key %>.pub
+
+aws s3api get-object --bucket <%= @tsuru_ssh_keys_bucket %> --key <%= @tsuru_ssh_key %> /var/lib/tsuru/<%= @tsuru_ssh_key %>
+aws s3api get-object --bucket <%= @tsuru_ssh_keys_bucket %> --key <%= @tsuru_ssh_key %>.pub /var/lib/tsuru/<%= @tsuru_ssh_key %>.pub
+
+function get_docker_ips() {
+
+    return_aws_json=`aws ec2 describe-instances --filters Name=tag-key,Values=Name Name=tag-value,Values=tsuru-docker`
+    if [ $? != 0 ]; then
+        return ""
+    fi
+
+    read -d '' ruby_code_json_parse <<EOF
+require 'json'
+JSON.parse(ARGF.read)['Reservations'].each do |value|
+    puts value['Instances'][0]['PrivateIpAddress']+':4243'
+end
+EOF
+
+    echo ${return_aws_json} | ruby -e "${ruby_code_json_parse}"
+
+}
+
+while [ $private_docker_ips != "" ]
+do
+    private_docker_ips=$(get_docker_ips |tr '\n' ' ')
+    private_docker_ips=$(echo $private_docker_ips| sed 's/\ $//')
+    sleep 1
+done
 
 if [ ! -d /var/cache/puppet/manifests ]; then mkdir -p /var/cache/puppet/manifests; fi
 cat <<EOF >/var/cache/puppet/manifests/manifest.pp
@@ -17,6 +46,7 @@ class { "${tsuru_class/-/::}":
     <% @puppet_class.each do |key, value| -%>
         <%= key %> => <%= value.is_a?(Array) ? value : "'#{value}'" %>,
     <% end -%>
+    tsuru_docker_servers_urls => [${private_docker_ips}]
 }
 EOF
 

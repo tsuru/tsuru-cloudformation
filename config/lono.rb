@@ -18,6 +18,8 @@ template "tsuru-api.json" do
     :ami => "ami-0568456c",
     :instance_type => "m1.small",
     :security_group => "tsuru-api",
+    :min_instances => 1,
+    :max_instances => 1,
     :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
     :tsuru_ssh_key => tsuru_ssh_key,
     :mongo_security_group_id => AWS.group_aws_id('mongo-tsuru-private'),
@@ -29,7 +31,6 @@ template "tsuru-api.json" do
                        :tsuru_redis_server => redis_host,
                        :tsuru_mongodb_url  => mongo_url,
                        :tsuru_registry_server => 'registry.' + domain_name,
-                       :tsuru_docker_servers_urls => ['docker1', 'docker2', 'docker3'],
                        :tsuru_docker_container_public_key => '/var/lib/tsuru/' + tsuru_ssh_key + '.pub'
                       }
   )
@@ -42,6 +43,8 @@ template "tsuru-docker.json" do
     :app => "tsuru-docker",
     :ami => "ami-0568456c",
     :instance_type => "m1.small",
+    :min_instances => 1,
+    :max_instances => 1, 
     :security_group => "tsuru-docker",
     :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
     :tsuru_ssh_key => tsuru_ssh_key,
