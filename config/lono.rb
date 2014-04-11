@@ -9,13 +9,15 @@ redis_host = AWS.hosts_for('redis-tsuru-private')
 redis_host = redis_host.empty? ? 'localhost:6379' : redis_host + ':6379'
 tsuru_ssh_key = 'id_rsa_tsuru_labs'
 tsuru_ssh_bucket = "tsuru-labs-ssh-keys"
+gandalf_registry_device = "/dev/sdk"
+ami = "ami-0568456c"
 
 template "tsuru-api.json" do
   source "tsuru-api.json.erb"
   variables(
     :domain_name => domain_name,
     :app => "tsuru-api",
-    :ami => "ami-0568456c",
+    :ami => ami,
     :instance_type => "m1.small",
     :security_group => "tsuru-api",
     :min_instances => 1,
@@ -41,7 +43,7 @@ template "tsuru-docker.json" do
   variables(
     :domain_name => domain_name,
     :app => "tsuru-docker",
-    :ami => "ami-0568456c",
+    :ami => ami,
     :instance_type => "m1.small",
     :min_instances => 1,
     :max_instances => 1, 
