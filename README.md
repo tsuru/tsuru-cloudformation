@@ -16,5 +16,6 @@ Instructions:
   to receive your domain or subdomain
 - Generate ssh-keys, using ssh-keygen, and put both private and
   public keys on bucket defined on cloud.yaml.
+- Export your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 - Run 'lono generate'. All output cloud formation file will be available on
   'output' dir. You should create tsuru-docker stack first.
