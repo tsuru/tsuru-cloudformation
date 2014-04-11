@@ -1,0 +1,20 @@
+cloud:
+    app_name: cloud.labs.tsuru.io
+    domain_name: labs.tsuru.io
+    aws_ami: ami-0568456c
+    mongo_security_group: mongo-tsuru-private
+    redis_security_group: redis-tsuru-private
+    keys:
+        tsuru_ssh_key: id_rsa_tsuru_labs
+        tsuru_ssh_bucket: tsuru-labs-ssh-keys
+    gandalf_registry_device: /dev/sdk
+
+    tsuru-api:
+        instance_type: m1.small
+        min_instances: 1
+        max_instances: 1
+
+    tsuru-docker:
+        instance_type: m1.small
+        min_instances: 1
+        max_instances: 1

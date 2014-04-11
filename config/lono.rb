@@ -1,16 +1,18 @@
 # Tsuru API Template
 load 'config/aws.rb'
+require 'yaml'
+cloud = YAML.load_file(File.expand_path('cloud.yaml'))['cloud']
 
-domain_name = 'labs.tsuru.io'
-app_name = 'cloud.labs.tsuru.io'
-mongo_hosts = AWS.hosts_for('mongo-tsuru-private')
+domain_name = cloud['domain_name']
+app_name = cloud['app_name']
+ami = cloud['aws_ami']
+mongo_hosts = AWS.hosts_for(cloud['mongo_security_group'])
 mongo_url = mongo_hosts.empty? ? 'localhost:27017' : mongo_hosts.join(':27017') + ':27017'
-redis_host = AWS.hosts_for('redis-tsuru-private')
+redis_host = AWS.hosts_for(cloud['redis_security_group'])
 redis_host = redis_host.empty? ? 'localhost:6379' : redis_host + ':6379'
-tsuru_ssh_key = 'id_rsa_tsuru_labs'
-tsuru_ssh_bucket = "tsuru-labs-ssh-keys"
-gandalf_registry_device = "/dev/sdk"
-ami = "ami-0568456c"
+tsuru_ssh_key = cloud['keys']['tsuru_ssh_key']
+tsuru_ssh_bucket =  cloud['keys']['tsuru_ssh_bucket']
+gandalf_registry_device = cloud['gandalf_registry_device']
 
 template "tsuru-api.json" do
   source "tsuru-api.json.erb"
@@ -18,10 +20,10 @@ template "tsuru-api.json" do
     :domain_name => domain_name,
     :app => "tsuru-api",
     :ami => ami,
-    :instance_type => "m1.small",
+    :instance_type => cloud['tsuru-api']['instance_type'],
     :security_group => "tsuru-api",
-    :min_instances => 1,
-    :max_instances => 1,
+    :min_instances => cloud['tsuru-api']['min_instances'],
+    :max_instances => cloud['tsuru-api']['max_instances'],
     :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
     :tsuru_ssh_key => tsuru_ssh_key,
     :mongo_security_group_id => AWS.group_aws_id('mongo-tsuru-private'),
@@ -44,9 +46,9 @@ template "tsuru-docker.json" do
     :domain_name => domain_name,
     :app => "tsuru-docker",
     :ami => ami,
-    :instance_type => "m1.small",
-    :min_instances => 1,
-    :max_instances => 1, 
+    :instance_type => cloud['tsuru-docker']['instance_type'],
+    :min_instances => cloud['tsuru-docker']['min_instances'],
+    :max_instances => cloud['tsuru-docker']['max_instances'],
     :security_group => "tsuru-docker",
     :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
     :tsuru_ssh_key => tsuru_ssh_key,
