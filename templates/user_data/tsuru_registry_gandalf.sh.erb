@@ -1,0 +1,23 @@
+#!/bin/bash -lexv
+
+apt-get update
+apt-get install ruby1.9.3 -y
+gem install puppet --no-ri --no-rdoc
+
+mkdir -p /var/lib/tsuru
+
+if [ ! -d /var/cache/puppet/manifests ]; then mkdir -p /var/cache/puppet/manifests; fi
+cat <<EOF >/var/cache/puppet/manifests/manifest.pp
+
+<% @puppet_class.keys.each do |key_class| -%>
+    class { <%= key_class.to_s.gsub('_','::') -%>:
+    <% @puppet_class[key_class].each do |key, value| -%>
+        <%= key %> => <%= value.is_a?(Array) ? value : "'#{value}'" %>,
+    <% end -%>
+    }
+<% end -%>
+
+EOF
+
+puppet module install tsuru-tsuru || puppet module upgrade tsuru-tsuru
+puppet apply /var/cache/puppet/manifests/manifest.pp

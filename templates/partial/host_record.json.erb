@@ -1,13 +1,14 @@
-    "HostRecord": {
+<% @hash_records.each_with_index do |record, i| -%>
+    "HostRecord<%= record[:dns_record] %>": {
       "Properties": {
-        "Comment": "<%= @dns_record %>.<%= @domain_name %>",
-        "HostedZoneName": "<%= @domain_name %>.",
-        "Name": "<%= @dns_record %>.<%= @domain_name %>",
+        "Comment": "<%= record[:dns_record] -%>.<%= record[:domain] -%>",
+        "HostedZoneName": "<%= record[:domain] -%>.",
+        "Name": "<%= record[:dns_record] -%>.<%= record[:domain] -%>",
         "ResourceRecords": [
           {
             "Fn::GetAtt": [
-                "<%= @elb_name %>",
-              "DNSName"
+                "<%= record[:resource_name] -%>",
+                "<%= record[:attribute] -%>"
             ]
           }
         ],
@@ -15,4 +16,5 @@
         "Type": "CNAME"
       },
       "Type": "AWS::Route53::RecordSet"
-    }
+    }<%= (i != @hash_records.length - 1) ? ',' : '' -%>
+<% end -%>

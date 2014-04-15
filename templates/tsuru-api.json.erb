@@ -85,7 +85,12 @@
     "DockerRefGroup": {
       "Description": "Group used to access docker instances port and ssh-agent",
       "Type": "String"
+    },
+    "GandalfRefGroup": {
+        "Description": "Group used to access gandalf instance",
+        "Type": "String"
     }
+
   },
   "Resources": {
     "TsuruApiSecurityGroup" : {
@@ -147,7 +152,7 @@
           "Ref": "KeyName"
         },
         "SecurityGroups": [
-            { "Ref": "TsuruApiSecurityGroup" }, { "Ref": "DockerRefGroup" } 
+            { "Ref": "TsuruApiSecurityGroup" }, { "Ref": "DockerRefGroup" }, { "Ref" : "GandalfRefGroup" }
         ],
         "UserData": {
           "Fn::Base64": {
@@ -187,6 +192,10 @@
             } ]
         }
     },
-    <%= partial('host_record.json.erb', :elb_name => "TsuruApiELB", :dns_record => "api", :domain => @domain_name) %>
+    <% 
+        @dns_records = []
+        @dns_records << { :resource_name => "TsuruApiELB", :attribute => "DNSName", :dns_record => "api", :domain => @domain_name } 
+    %>
+    <%= partial('host_record.json.erb', :hash_records => @dns_records ) %>
   }
 }

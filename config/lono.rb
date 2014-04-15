@@ -59,6 +59,30 @@ template "tsuru-docker.json" do
   )
 end
 
+template "tsuru-registry-gandalf.json" do
+  source "tsuru-registry-gandalf.json.erb"
+  variables(
+    :domain_name => domain_name,
+    :app => "tsuru-registry-gandalf",
+    :ami => ami,
+    :instance_type => cloud['tsuru-registry-gandalf']['instance_type'],
+    :security_group => "tsuru-registry-gandalf",
+    :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
+    :tsuru_ssh_key => tsuru_ssh_key,
+    :puppet_class => {
+      :tsuru_gandalf => {
+        :gandalf_host => 'http://git.' + domain_name + '8080',
+        :gandalf_db_url => mongo_url,
+        :tsuru_api_host => 'api.' + domain_name,
+        :tsuru_api_token => 'xxx'
+      },
+      :tsuru_registry=> {
+        :registry_ipbind_port => '0.0.0.0:80'
+      }
+    }
+  )
+end
+
 # Update Policy
 template "update-delete-policy.json" do
   source "update-delete-policy.erb"

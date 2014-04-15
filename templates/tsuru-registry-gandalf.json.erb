@@ -81,17 +81,13 @@
       "Default": "tsuru_labs",
       "Description": "The EC2 Key Pair to allow SSH access to the instances",
       "Type": "String"
-    },
-    "RegistryRefGroup": {
-        "Description": "Group used to access registry instance",
-        "Type": "String"
-    } 
+    }
   },
   "Resources": {
-    "TsuruDockerSecurityGroup" : {
+    "TsuruGandalfRegistrySecurityGroup" : {
         "Type" : "AWS::EC2::SecurityGroup",
         "Properties" : {
-            "GroupDescription" : "Tsuru Docker inbound rules",
+            "GroupDescription" : "Tsuru Gandalf/Registry inbound rules",
             "Tags": [ { "Key": "Name", "Value": "<%= @app %>" } ],
             "SecurityGroupIngress" : [{
                 "IpProtocol" : "tcp",
@@ -100,28 +96,34 @@
                 "CidrIp" : "0.0.0.0/0"
             },{
                 "IpProtocol" : "tcp",
-                "FromPort" : "4243",
-                "ToPort" : "4243",
-                "SourceSecurityGroupName" : { "Ref" : "TsuruDockerApiSecurityGroup" }
+                "FromPort" : "8080",
+                "ToPort" : "8080",
+                "SourceSecurityGroupName" : { "Ref" : "TsuruGandalfApiSecurityGroup" }
             },{
                 "IpProtocol" : "tcp",
-                "FromPort" : "4545",
-                "ToPort" : "4545",
-                "SourceSecurityGroupName" : { "Ref" : "TsuruDockerApiSecurityGroup" }
+                "FromPort" : "80",
+                "ToPort" : "80",
+                "SourceSecurityGroupName" : { "Ref" : "TsuruRegistryDockerSecurityGroup" }
             }
             ]
         }
     },
-    "TsuruDockerApiSecurityGroup" : {
+    "TsuruGandalfApiSecurityGroup" : {
         "Type" :  "AWS::EC2::SecurityGroup",
         "Properties" : {
-            "Tags": [ { "Key": "Name", "Value": "tsuru-docker-api" } ],
-            "GroupDescription" : "Tsuru Docker -> Api permission group"
+            "Tags": [ { "Key": "Name", "Value": "tsuru-gandalf-api" } ],
+            "GroupDescription" : "Tsuru Gandalf -> Api permission group"
         }
     },
-    <%= partial('iam_ssh_describe_instances_policy.json.erb', :bucket_name => @tsuru_ssh_keys_bucket) %>
-    "TsuruDockerServerLaunchConfig": {
-      "Type":"AWS::AutoScaling::LaunchConfiguration",
+    "TsuruRegistryDockerSecurityGroup" : {
+        "Type" :  "AWS::EC2::SecurityGroup",
+        "Properties" : {
+            "Tags": [ { "Key": "Name", "Value": "tsuru-registry-docker" } ],
+            "GroupDescription" : "Tsuru Registry -> Docker permission group"
+        }
+    }, 
+    "TsuruRegistryGandalfServer": {
+      "Type":"AWS::EC2::Instance",
       "Properties": {
         "ImageId": {
           "Fn::FindInMap": [
@@ -140,24 +142,22 @@
             }
           ]
         },
+        "Tags": [ { "Key": "Name", "Value": "<%= @app %>" } ],
         "InstanceType": {
           "Ref": "InstanceType"
         },
-        "IamInstanceProfile": { 
-          "Ref": "TsuruIamProfile"
-        }, 
         "KeyName": {
           "Ref": "KeyName"
         },
         "SecurityGroups": [
-            { "Ref": "TsuruDockerSecurityGroup" }, { "Ref": "RegistryRefGroup" }
+            { "Ref": "TsuruGandalfRegistrySecurityGroup" }
         ],
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
               "",
               [
-                <% script = @user_data_script || 'tsuru_docker.sh.erb' %>
+                <% script = @user_data_script || 'tsuru_registry_gandalf.sh.erb' %>
                 <%= user_data(script) %>
               ]
             ]
@@ -165,16 +165,11 @@
         }
       }
     },
-    "TsuruDockerGroup" : {
-        "Type" : "AWS::AutoScaling::AutoScalingGroup",
-        "DeletionPolicy" : "Retain",
-        "Properties" : {
-            "AvailabilityZones" : { "Fn::GetAZs" : "" },
-            "LaunchConfigurationName" : { "Ref" : "TsuruDockerServerLaunchConfig" },
-            "Tags": [ { "Key": "Name", "Value": "<%= @app %>", "PropagateAtLaunch":"true" } ],
-            "MinSize" : "<%= @min_instances %>",
-            "MaxSize" : "<%= @max_instances %>" 
-        }
-    }
+    <% 
+        @dns_records = []
+        @dns_records << { :resource_name => "TsuruRegistryGandalfServer", :attribute => "PrivateDnsName", :dns_record => "registry", :domain => @domain_name }
+        @dns_records << { :resource_name => "TsuruRegistryGandalfServer", :attribute => "PublicDnsName", :dns_record => "git", :domain => @domain_name } 
+    -%>
+    <%= partial('host_record.json.erb', :hash_records => @dns_records) -%>
   }
 }
