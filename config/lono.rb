@@ -69,6 +69,7 @@ template "tsuru-registry-gandalf.json" do
     :security_group => "tsuru-registry-gandalf",
     :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
     :tsuru_ssh_key => tsuru_ssh_key,
+    :mongo_security_group_id => AWS.group_aws_id('mongo-tsuru-private'),
     :puppet_class => {
       :tsuru_gandalf => {
         :gandalf_host => 'http://git.' + domain_name + '8080',
