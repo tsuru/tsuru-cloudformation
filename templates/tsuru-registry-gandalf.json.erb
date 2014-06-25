@@ -132,8 +132,8 @@
             "SourceSecurityGroupName": { "Ref" : "TsuruGandalfRegistrySecurityGroup" }
         }
     },
-    "TsuruRegistryGandalfServer": {
-      "Type":"AWS::EC2::Instance",
+    "TsuruGandalfRegistryLaunchConfig": {
+      "Type":"AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
         "ImageId": {
           "Fn::FindInMap": [
@@ -152,7 +152,6 @@
             }
           ]
         },
-        "Tags": [ { "Key": "Name", "Value": "<%= @app %>" } ],
         "InstanceType": {
           "Ref": "InstanceType"
         },
@@ -175,10 +174,36 @@
         }
       }
     },
+    "TsuruGandalfRegistryGroup" : {
+        "Type" : "AWS::AutoScaling::AutoScalingGroup",
+        "DeletionPolicy" : "Retain",
+        "Properties" : {
+            "AvailabilityZones" : { "Fn::GetAZs" : "" },
+            "LaunchConfigurationName" : { "Ref" : "TsuruGandalfRegistryLaunchConfig" },
+            "Tags": [ { "Key": "Name", "Value": "<%= @app %>", "PropagateAtLaunch":"true" } ],
+            "MinSize" : "<%= @min_instances %>",
+            "MaxSize" : "<%= @max_instances %>",
+            "LoadBalancerNames" : [ { "Ref" : "TsuruGitELB" } ]
+        }
+    }, 
+    "TsuruGitELB" : { 
+        "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+        "DeletionPolicy" : "Retain",
+        "Properties" : {
+            "LoadBalancerName" : "<%= @app %>",
+            "AvailabilityZones" : { "Fn::GetAZs" : "" },
+            "Listeners" : [ {
+                "LoadBalancerPort" : "22",
+                "InstancePort" : "22",
+                "Protocol" : "TCP"
+            } ]
+        }
+    },
     <% 
         @dns_records = []
-        @dns_records << { :resource_name => "TsuruRegistryGandalfServer", :attribute => "PrivateDnsName", :dns_record => "registry", :domain => @domain_name }
-        @dns_records << { :resource_name => "TsuruRegistryGandalfServer", :attribute => "PublicDnsName", :dns_record => "git", :domain => @domain_name } 
+        @dns_records << { :resource_name => "", :attribute => "DNSName", :dns_record => "registry", :domain => @domain_name }
+        @dns_records << { :resource_name => "TsuruGandalfELB", :attribute => "DNSName", :dns_record => "gandalf", :domain => @domain_name } 
+        @dns_records << { :resource_name => "TsuruGitELB", :attribute => "DNSName", :dns_record => "git", :domain => @domain_name } 
     -%>
     <%= partial('host_record.json.erb', :hash_records => @dns_records) -%>
   }

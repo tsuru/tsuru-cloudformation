@@ -4,20 +4,31 @@ cloud:
     aws_ami: ami-0568456c
     mongo_security_group: mongo-tsuru-private
     redis_security_group: redis-tsuru-private
+    vpc_cidr: 10.20.0.0/16
     keys:
         tsuru_ssh_key: id_rsa_tsuru_labs
         tsuru_ssh_bucket: tsuru-labs-ssh-keys
-    gandalf_registry_device: /dev/sdk
 
     tsuru-api:
+        vpc_network: 10.20.10.0/24
         instance_type: m1.small
         min_instances: 1
         max_instances: 1
 
-    tsuru-docker:
+    tsuru-docker: 
+        vpc_network: 10.20.20.0/24
         instance_type: m1.small
         min_instances: 1
         max_instances: 1
 
     tsuru-registry-gandalf:
+        vpc_network: 10.20.30.0/24
         instance_type: m1.small
+        min_instances: 1
+        max_instances: 1
+
+    tsuru-router:
+        vpc_network: 10.20.40.0/24
+        instane_type: m1.small
+        min_instances: 1
+        max_instances: 1

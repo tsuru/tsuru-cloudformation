@@ -13,6 +13,19 @@ redis_host = redis_host.empty? ? 'localhost:6379' : redis_host + ':6379'
 tsuru_ssh_key = cloud['keys']['tsuru_ssh_key']
 tsuru_ssh_bucket =  cloud['keys']['tsuru_ssh_bucket']
 gandalf_registry_device = cloud['gandalf_registry_device']
+vpc_cidr = cloud['vpc_cidr']
+
+template "tsuru-vpc.json" do
+  source "tsuru-vpc.json.erb"
+  variables(
+    :vpc_cidr => vpc_cidr,
+    :vpc_subnets => { :router => cloud['tsuru-router']['vpc_network'],
+                      :api => cloud['tsuru-api']['vpc_network'],
+                      :registryGandalf => cloud['tsuru-registry-gandalf']['vpc_network'],
+                      :docker => cloud['tsuru-docker']['vpc_network']
+    }
+  )
+end
 
 template "tsuru-api.json" do
   source "tsuru-api.json.erb"
@@ -72,7 +85,7 @@ template "tsuru-registry-gandalf.json" do
     :mongo_security_group_id => AWS.group_aws_id('mongo-tsuru-private'),
     :puppet_class => {
       :tsuru_gandalf => {
-        :gandalf_host => 'http://git.' + domain_name + '8080',
+        :gandalf_host => 'http://git.' + domain_name,
         :gandalf_db_url => mongo_url,
         :tsuru_api_host => 'api.' + domain_name,
         :tsuru_api_token => 'xxx'

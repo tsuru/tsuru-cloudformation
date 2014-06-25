@@ -1,0 +1,156 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "PublicCloudVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "<%= @vpc_cidr %>",
+        "InstanceTenancy": "default",
+        "EnableDnsSupport": "true",
+        "EnableDnsHostnames": "true",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "tsuru public cloud"
+          }
+        ]
+      }
+    },
+    <% @vpc_subnets.each do |snet_key, snet_value| %>
+    "<%= snet_key.to_s.capitalize + 'Subnet' %>": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+          "CidrBlock": "<%= snet_value %>",
+        "AvailabilityZone": "us-east-1e",
+        "VpcId": {
+          "Ref": "PublicCloudVPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "<%= snet_key %>"
+          }
+        ]
+      }
+    },
+    "<%= snet_key.to_s.capitalize + 'SubnetAcl' %>": {
+      "Type": "AWS::EC2::SubnetNetworkAclAssociation",
+      "Properties": {
+        "NetworkAclId": {
+          "Ref": "TsuruNetAcl"
+        },
+        "SubnetId": {
+          "Ref": "<%= snet_key.to_s.capitalize + 'Subnet' %>"
+        }
+      }
+    }, 
+    "<%= snet_key.to_s.capitalize + 'SubnetRoute' %>": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "TsuruRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "<%= snet_key.to_s.capitalize + 'Subnet' %>"
+        }
+      }
+    }, 
+    <% end %>
+    "DefaultGW": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "default"
+          }
+        ]
+      }
+    },                             
+    "DhcpOptions": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainName": "ec2.internal",
+        "DomainNameServers": [
+          "AmazonProvidedDNS"
+        ]
+      }
+    },
+    "TsuruNetAcl": {
+      "Type": "AWS::EC2::NetworkAcl",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PublicCloudVPC"
+        }
+      }
+    },
+    "TsuruRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PublicCloudVPC"
+        }
+      }
+    },
+    "acl1": {
+      "Type": "AWS::EC2::NetworkAclEntry",
+      "Properties": {
+        "CidrBlock": "0.0.0.0/0",
+        "Egress": true,
+        "Protocol": "-1",
+        "RuleAction": "allow",
+        "RuleNumber": "100",
+        "NetworkAclId": {
+          "Ref": "TsuruNetAcl"
+        }
+      }
+    },
+    "acl2": {
+      "Type": "AWS::EC2::NetworkAclEntry",
+      "Properties": {
+        "CidrBlock": "0.0.0.0/0",
+        "Protocol": "-1",
+        "RuleAction": "allow",
+        "RuleNumber": "100",
+        "NetworkAclId": {
+          "Ref": "TsuruNetAcl"
+        }
+      }
+    },
+    "gw1": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PublicCloudVPC"
+        },
+        "InternetGatewayId": {
+          "Ref": "DefaultGW"
+        }
+      }
+    },
+    "TsuruRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "TsuruRouteTable"
+        },
+        "GatewayId": {
+          "Ref": "DefaultGW"
+        }
+      },
+      "DependsOn": "gw1"
+    },
+    "dchpassoc3": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PublicCloudVPC"
+        },
+        "DhcpOptionsId": {
+          "Ref": "DhcpOptions"
+        }
+      }
+    }
+  }
+}
