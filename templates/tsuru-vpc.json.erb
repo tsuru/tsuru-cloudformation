@@ -152,5 +152,19 @@
         }
       }
     }
+  },
+  "Outputs":{
+      "VpcId" : { "Value" : { "Ref": "PublicCloudVPC" } },
+      <%
+        vpc_len = @vpc_subnets.length
+        @vpc_subnets.each do |snet, value|
+      -%>
+      "<%= snet.to_s.capitalize + 'SubnetId' -%>" : {
+           "Value" : {
+              "Ref" : "<%= snet.to_s.capitalize + 'Subnet' -%>"
+           }
+      }<%= (vpc_len - 1 != 0) ? ',' : '' -%>
+      <% vpc_len-=1 %>
+      <% end -%>
   }
 }
