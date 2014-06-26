@@ -84,54 +84,6 @@
     }
   },
   "Resources": {
-    "TsuruGandalfRegistrySecurityGroup" : {
-        "Type" : "AWS::EC2::SecurityGroup",
-        "Properties" : {
-            "GroupDescription" : "Tsuru Gandalf/Registry inbound rules",
-            "Tags": [ { "Key": "Name", "Value": "<%= @app %>" } ],
-            "SecurityGroupIngress" : [{
-                "IpProtocol" : "tcp",
-                "FromPort" : "22",
-                "ToPort" : "22",
-                "CidrIp" : "0.0.0.0/0"
-            },{
-                "IpProtocol" : "tcp",
-                "FromPort" : "8080",
-                "ToPort" : "8080",
-                "SourceSecurityGroupName" : { "Ref" : "TsuruGandalfApiSecurityGroup" }
-            },{
-                "IpProtocol" : "tcp",
-                "FromPort" : "80",
-                "ToPort" : "80",
-                "SourceSecurityGroupName" : { "Ref" : "TsuruRegistryDockerSecurityGroup" }
-            }
-            ]
-        }
-    },
-    "TsuruGandalfApiSecurityGroup" : {
-        "Type" :  "AWS::EC2::SecurityGroup",
-        "Properties" : {
-            "Tags": [ { "Key": "Name", "Value": "tsuru-gandalf-api" } ],
-            "GroupDescription" : "Tsuru Gandalf -> Api permission group"
-        }
-    },
-    "TsuruRegistryDockerSecurityGroup" : {
-        "Type" :  "AWS::EC2::SecurityGroup",
-        "Properties" : {
-            "Tags": [ { "Key": "Name", "Value": "tsuru-registry-docker" } ],
-            "GroupDescription" : "Tsuru Registry -> Docker permission group"
-        }
-    }, 
-    "MongoGroupGandalfIngress": {
-        "Type": "AWS::EC2::SecurityGroupIngress",
-        "Properties" : {
-            "GroupId": "<%= @mongo_security_group_id %>",
-            "IpProtocol": "tcp",
-            "FromPort": "27017",
-            "ToPort": "27017",
-            "SourceSecurityGroupName": { "Ref" : "TsuruGandalfRegistrySecurityGroup" }
-        }
-    },
     "TsuruGandalfRegistryLaunchConfig": {
       "Type":"AWS::AutoScaling::LaunchConfiguration",
       "Properties": {

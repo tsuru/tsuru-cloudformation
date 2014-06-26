@@ -1,0 +1,81 @@
+{
+    "Resources": {
+     "MongoGroupGandalfIngress": {
+        "Type": "AWS::EC2::SecurityGroupIngress",
+        "Properties" : {
+            "GroupId": "<%= @mongo_security_group_id %>",
+            "IpProtocol": "tcp",
+            "FromPort": "27017",
+            "ToPort": "27017",
+            "SourceSecurityGroupName": { "Ref" : "TsuruGandalfRegistrySecurityGroup" }
+        }
+    }, 
+     "TsuruDockerSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+            "GroupDescription" : "Tsuru Docker inbound rules",
+            "Tags": [ { "Key": "Name", "Value": "tsuru-docker" } ],
+            "SecurityGroupIngress" : [{
+                "IpProtocol" : "tcp",
+                "FromPort" : "22",
+                "ToPort" : "22",
+                "CidrIp" : "0.0.0.0/0"
+            },{
+                "IpProtocol" : "tcp",
+                "FromPort" : "4243",
+                "ToPort" : "4243",
+                "SourceSecurityGroupName" : { "Ref" : "TsuruApiSecurityGroup" }
+            },{
+                "IpProtocol" : "tcp",
+                "FromPort" : "4545",
+                "ToPort" : "4545",
+                "SourceSecurityGroupName" : { "Ref" : "TsuruApiSecurityGroup" }
+            }
+            ]
+        }
+       },
+      "TsuruApiSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+            "GroupDescription" : "Tsuru API inbound rules",
+            "Tags": [ { "Key": "Name", "Value": "tsuru-api" } ],
+            "SecurityGroupIngress" : [{
+                "IpProtocol" : "tcp",
+                "FromPort" : "22",
+                "ToPort" : "22",
+                "CidrIp" : "0.0.0.0/0"
+            },{
+                "IpProtocol" : "tcp",
+                "FromPort" : "443",
+                "ToPort" : "443",
+                "CidrIp" : "0.0.0.0/0"
+            }]
+        }
+      },
+     "TsuruGandalfRegistrySecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+            "GroupDescription" : "Tsuru Gandalf/Registry inbound rules",
+            "Tags": [ { "Key": "Name", "Value": "gandalf_registry" } ],
+            "SecurityGroupIngress" : [{
+                "IpProtocol" : "tcp",
+                "FromPort" : "22",
+                "ToPort" : "22",
+                "CidrIp" : "0.0.0.0/0"
+            },{
+                "IpProtocol" : "tcp",
+                "FromPort" : "8080",
+                "ToPort" : "8080",
+                "SourceSecurityGroupName" : { "Ref" : "TsuruApiSecurityGroup" }
+            },{
+                "IpProtocol" : "tcp",
+                "FromPort" : "80",
+                "ToPort" : "80",
+                "SourceSecurityGroupName" : { "Ref" : "TsuruDockerSecurityGroup" }
+            }
+            ]
+        }
+     }
+    }
+}
+

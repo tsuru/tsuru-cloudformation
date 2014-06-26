@@ -27,6 +27,13 @@ template "tsuru-vpc.json" do
   )
 end
 
+template "tsuru-groups.json" do
+  source "tsuru-groups.json.erb"
+  variables(
+    :mongo_security_group_id => AWS.group_aws_id('mongo-tsuru-private')
+  )
+end
+
 template "tsuru-api.json" do
   source "tsuru-api.json.erb"
   variables(
