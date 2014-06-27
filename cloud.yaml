@@ -2,8 +2,6 @@ cloud:
     app_name: cloud.labs.tsuru.io
     domain_name: labs.tsuru.io
     aws_ami: ami-0568456c
-    mongo_security_group: mongo-tsuru-private
-    redis_security_group: redis-tsuru-private
     vpc_cidr: 10.20.0.0/16
     keys:
         tsuru_ssh_key: id_rsa_tsuru_labs

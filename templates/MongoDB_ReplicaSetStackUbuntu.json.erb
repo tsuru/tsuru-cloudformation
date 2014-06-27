@@ -63,43 +63,6 @@
     },
 
     "Resources" : {
-        "MongoSecurityGroup" : {
-            "Type" : "AWS::EC2::SecurityGroup",
-            "Properties" : {
-                "GroupDescription" : "ReplicaSet security group",
-                "SecurityGroupIngress" : [ 
-                    {
-                        "IpProtocol" : "tcp",
-                        "FromPort" : "22",
-                        "ToPort" : "22",
-                        "CidrIp" : "0.0.0.0/0"
-                    }
-                ]
-            }
-        },
-
-        "MongoSecurityGroupIngress" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Ref" : "MongoSecurityGroup" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "27017",
-                "ToPort" : "27017",
-                "SourceSecurityGroupName" : { "Ref" : "MongoSecurityGroup" }
-            }
-        },
-
-        "StatusIngress" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Ref" : "MongoSecurityGroup" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "28017",
-                "ToPort" : "28017",
-                "SourceSecurityGroupName" : { "Ref" : "MongoSecurityGroup" }
-            }
-        },
-
         "CfnUser" : {
             "Type" : "AWS::IAM::User",
             "Properties" : {
@@ -274,7 +237,7 @@
 
                     "## Create replica set configuration\n",
                     "## The following is only needed on the PRIMARY\n",
-                    "HOSTNAME=`/usr/bin/curl -s http://169.254.169.254/latest/meta-data/public-hostname`\n",
+                    "HOSTNAME=`/usr/bin/curl -s http://169.254.169.254/latest/meta-data/private-hostname`\n",
 
                     "cat <<EOF > /tmp/replicaSetConfigInit.js\n",
                     "config = {_id: \"", { "Ref" : "ReplicaSetName" } ,"\", members : [",

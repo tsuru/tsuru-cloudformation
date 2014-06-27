@@ -1,9 +1,49 @@
 {
+
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description" : "Tsuru groups declaration",
+
     "Resources": {
+     "MongoSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+            "GroupDescription" : "ReplicaSet security group",
+            "Tags": [ { "Key": "Name", "Value": "tsuru mongodb" } ],
+            "SecurityGroupIngress" : [ 
+                {
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "22",
+                    "ToPort" : "22",
+                    "CidrIp" : "0.0.0.0/0"
+                }
+            ]
+        }
+     }, 
+     "MongoSecurityGroupIngress" : {
+        "Type" : "AWS::EC2::SecurityGroupIngress",
+        "Properties" : {
+            "GroupName" : { "Ref" : "MongoSecurityGroup" },
+            "IpProtocol" : "tcp",
+            "FromPort" : "27017",
+            "ToPort" : "27017",
+            "SourceSecurityGroupName" : { "Ref" : "MongoSecurityGroup" }
+        }
+     },
+     "StatusIngress" : {
+        "Type" : "AWS::EC2::SecurityGroupIngress",
+        "Properties" : {
+            "GroupName" : { "Ref" : "MongoSecurityGroup" },
+            "IpProtocol" : "tcp",
+            "FromPort" : "28017",
+            "ToPort" : "28017",
+            "SourceSecurityGroupName" : { "Ref" : "MongoSecurityGroup" }
+        }
+     }, 
      "TsuruGandalfRegistryMongoDBIngress": {
         "Type": "AWS::EC2::SecurityGroupIngress",
         "Properties" : {
-            "GroupId": "<%= @mongo_security_group_id %>",
+            "GroupId": { "Ref" : "MongoSecurityGroup" },
             "IpProtocol": "tcp",
             "FromPort": "27017",
             "ToPort": "27017",
@@ -13,7 +53,7 @@
      "TsuruAPIMongoDBIngress": {
         "Type": "AWS::EC2::SecurityGroupIngress",
         "Properties" : {
-            "GroupId": "<%= @mongo_security_group_id %>",
+            "GroupId": { "Ref" : "MongoSecurityGroup" },
             "IpProtocol": "tcp",
             "FromPort": "27017",
             "ToPort": "27017",
@@ -88,6 +128,7 @@
      }
     },
     "Outputs": {
+        "MongoDBSecurityGroup" : { "Value" : { "Ref" : "MongoSecurityGroup" } },
         "TsuruDockerSecurityGroup" : { "Value" : { "Ref" : "TsuruDockerSecurityGroup" } },
         "TsuruApiSecurityGroup" : { "Value" : { "Ref" : "TsuruApiSecurityGroup" } },
         "TsuruGandalfRegistrySecurityGroup" : { "Value" : { "Ref" : "TsuruGandalfRegistrySecurityGroup" } }

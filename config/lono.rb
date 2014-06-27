@@ -1,15 +1,10 @@
 # Tsuru API Template
-load 'config/aws.rb'
 require 'yaml'
 cloud = YAML.load_file(File.expand_path('cloud.yaml'))['cloud']
 
 domain_name = cloud['domain_name']
 app_name = cloud['app_name']
 ami = cloud['aws_ami']
-mongo_hosts = AWS.hosts_for(cloud['mongo_security_group'])
-mongo_url = mongo_hosts.empty? ? 'localhost:27017' : mongo_hosts.join(':27017') + ':27017'
-redis_host = AWS.hosts_for(cloud['redis_security_group'])
-redis_host = redis_host.empty? ? 'localhost:6379' : redis_host + ':6379'
 tsuru_ssh_key = cloud['keys']['tsuru_ssh_key']
 tsuru_ssh_bucket =  cloud['keys']['tsuru_ssh_bucket']
 gandalf_registry_device = cloud['gandalf_registry_device']
@@ -29,9 +24,6 @@ end
 
 template "tsuru-groups.json" do
   source "tsuru-groups.json.erb"
-  variables(
-    :mongo_security_group_id => AWS.group_aws_id('mongo-tsuru-private')
-  )
 end
 
 template "MongoDB_ReplicaSetMemberUbuntu.template" do
@@ -60,14 +52,11 @@ template "tsuru-api.json" do
     :max_instances => cloud['tsuru-api']['max_instances'],
     :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
     :tsuru_ssh_key => tsuru_ssh_key,
-    :mongo_security_group_id => AWS.group_aws_id('mongo-tsuru-private'),
     :puppet_class => { :tsuru_app_domain => app_name,
                        :tsuru_api_server_url => 'api.' + domain_name,
                        :tsuru_git_url => 'http://git.' + domain_name,
                        :tsuru_git_rw_host => 'git.' + domain_name,
                        :tsuru_git_ro_host => 'git.' + domain_name,
-                       :tsuru_redis_server => redis_host,
-                       :tsuru_mongodb_url  => mongo_url,
                        :tsuru_registry_server => 'registry.' + domain_name,
                        :tsuru_docker_container_public_key => '/var/lib/tsuru/' + tsuru_ssh_key + '.pub'
                       }
@@ -103,11 +92,9 @@ template "tsuru-registry-gandalf.json" do
     :security_group => "tsuru-registry-gandalf",
     :tsuru_ssh_keys_bucket => tsuru_ssh_bucket,
     :tsuru_ssh_key => tsuru_ssh_key,
-    :mongo_security_group_id => AWS.group_aws_id('mongo-tsuru-private'),
     :puppet_class => {
       :tsuru_gandalf => {
         :gandalf_host => 'http://git.' + domain_name,
-        :gandalf_db_url => mongo_url,
         :tsuru_api_host => 'api.' + domain_name,
         :tsuru_api_token => 'xxx'
       },
