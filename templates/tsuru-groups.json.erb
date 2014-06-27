@@ -1,6 +1,6 @@
 {
     "Resources": {
-     "MongoGroupGandalfIngress": {
+     "TsuruGandalfRegistryMongoDBIngress": {
         "Type": "AWS::EC2::SecurityGroupIngress",
         "Properties" : {
             "GroupId": "<%= @mongo_security_group_id %>",
@@ -9,7 +9,17 @@
             "ToPort": "27017",
             "SourceSecurityGroupName": { "Ref" : "TsuruGandalfRegistrySecurityGroup" }
         }
-    }, 
+     }, 
+     "TsuruAPIMongoDBIngress": {
+        "Type": "AWS::EC2::SecurityGroupIngress",
+        "Properties" : {
+            "GroupId": "<%= @mongo_security_group_id %>",
+            "IpProtocol": "tcp",
+            "FromPort": "27017",
+            "ToPort": "27017",
+            "SourceSecurityGroupName": { "Ref" : "TsuruApiSecurityGroup" }
+        }
+     },
      "TsuruDockerSecurityGroup" : {
         "Type" : "AWS::EC2::SecurityGroup",
         "Properties" : {

@@ -84,16 +84,6 @@
     }
   },
   "Resources": {
-    "MongoGroupApiIngress": {
-        "Type": "AWS::EC2::SecurityGroupIngress",
-        "Properties" : {   
-            "GroupId": "<%= @mongo_security_group_id %>",
-            "IpProtocol": "tcp",
-            "FromPort": "27017",
-            "ToPort": "27017",
-            "SourceSecurityGroupName": { "Ref" : "TsuruApiSecurityGroup" }
-        }   
-    },
     <%= partial('iam_ssh_policy.json.erb', :bucket_name => @tsuru_ssh_keys_bucket) %>
     "TsuruApiServerLaunchConfig": {
       "Type":"AWS::AutoScaling::LaunchConfiguration",
@@ -125,7 +115,7 @@
           "Ref": "KeyName"
         },
         "SecurityGroups": [
-            { "Ref": "TsuruApiSecurityGroup" }, { "Ref": "TsuruDockerSecurityGroup" }, { "Ref" : "GandalfSecurityGroup" }
+            { "Ref": "TsuruApiSecurityGroup" }, { "Ref": "TsuruDockerSecurityGroup" }, { "Ref" : "TsuruGandalfRegistrySecurityGroup" }
         ],
         "UserData": {
           "Fn::Base64": {
