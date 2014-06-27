@@ -34,6 +34,20 @@ template "tsuru-groups.json" do
   )
 end
 
+template "MongoDB_ReplicaSetMemberUbuntu.template" do
+  source "MongoDB_ReplicaSetMemberUbuntu.template.erb"
+  variables(
+    :ami => ami
+  )
+end
+
+template "MongoDB_ReplicaSetStackUbuntu.json" do
+  source "MongoDB_ReplicaSetStackUbuntu.json.erb"
+  variables(
+    :ami => ami
+  )
+end
+
 template "tsuru-api.json" do
   source "tsuru-api.json.erb"
   variables(
